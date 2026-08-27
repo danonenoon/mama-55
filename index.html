@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>С Юбилеем, Мама! 55 лет</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Cormorant Garamond', serif;
+        }
+        
+        .cursive-font { font-family: 'Caveat', cursive; }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .gold-text {
+            background: linear-gradient(135deg, #d4af37 0%, #fff2cd 40%, #b8860b 60%, #ffdf00 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(0px 8px 16px rgba(212, 175, 55, 0.5));
+            padding: 0.1em;
+        }
+
+        .fade-in { animation: fadeIn 0.8s ease-out forwards; }
+        .fade-out { animation: fadeOut 0.5s ease-in forwards; }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.95); visibility: hidden; pointer-events: none; }
+        }
+
+        .hidden-state { display: none !important; }
+
+        #sea-bg {
+            position: fixed; inset: 0; z-index: 10;
+            background-image: url('https://images.unsplash.com/photo-1505118380757-91f5f5632de0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2500&q=80');
+            background-size: cover; background-position: center;
+            opacity: 0; pointer-events: none; transition: opacity 1.5s ease;
+            animation: panBg 30s linear infinite alternate;
+        }
+        #sea-bg::before {
+            content: ''; position: absolute; inset: 0;
+            background: rgba(0, 30, 60, 0.4);
+        }
+        #sea-bg.active { opacity: 1; }
+        
+        @keyframes panBg { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
+
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255, 105, 180, 0.4); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- 3D Контейнер -->
+    <div id="canvas-container" class="fixed inset-0 z-0"></div>
+    <div id="sea-bg"></div>
+
+    <!-- UI Слой -->
+    <div class="fixed inset-0 z-30 flex items-center justify-center pointer-events-none p-2 lg:p-6">
+        
+        <!-- ЭКРАН 1: ПРИВЕТСТВИЕ -->
+        <div id="welcome-screen" class="glass-panel rounded-[2rem] lg:rounded-[3rem] p-6 lg:p-12 text-center w-full max-w-xl fade-in pointer-events-auto relative overflow-hidden">
+            <div class="absolute -top-10 -left-10 w-32 h-32 bg-pink-200 rounded-full mix-blend-multiply filter blur-2xl opacity-60"></div>
+            
+            <p class="cursive-font text-2xl lg:text-4xl text-rose-600 mb-1 relative z-10 font-bold">Самой лучшей на свете...</p>
+            <h1 class="text-5xl lg:text-7xl font-extrabold text-gray-900 mt-2 mb-0 tracking-widest relative z-10">МАМЕ</h1>
+            <div class="relative -mt-6 lg:-mt-10 mb-2 z-10">
+                <div class="text-[8rem] lg:text-[11.5rem] leading-normal font-bold gold-text">55</div>
+            </div>
+            <p class="text-lg lg:text-2xl text-gray-600 mb-6 lg:mb-8 italic relative z-10 font-medium">Готова к космическому путешествию?</p>
+            
+            <button onclick="startFlight()" class="relative z-10 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white text-lg lg:text-2xl cursive-font font-bold py-3 px-8 lg:py-4 lg:px-12 rounded-full shadow-xl transform hover:scale-105 transition-all">
+                Начать полет ✨
+            </button>
+        </div>
+
+        <!-- ЭКРАН 2: ВЫБОР ОТКРЫТОК -->
+        <div id="selection-screen" class="hidden-state flex-col items-center justify-center w-full max-w-5xl pointer-events-auto">
+            <h2 class="cursive-font text-4xl lg:text-6xl text-white mb-8 lg:mb-10 drop-shadow-lg text-center px-2">Выбери послание...</h2>
+            
+            <div class="flex flex-wrap justify-center gap-4 w-full px-2">
+                <button onclick="openMessage(1)" class="bg-white/10 backdrop-blur-md border border-white/30 rounded-3xl p-4 lg:p-6 text-center hover:bg-white/20 transition-all hover:-translate-y-2 shadow-xl w-36 h-36 lg:w-48 lg:h-48 flex flex-col justify-center items-center">
+                    <div class="text-4xl lg:text-6xl mb-2">💌</div>
+                    <span class="cursive-font text-xl lg:text-2xl text-white font-bold">С Днём Рождения!</span>
+                </button>
+                <button onclick="openMessage(2)" class="bg-white/10 backdrop-blur-md border border-white/30 rounded-3xl p-4 lg:p-6 text-center hover:bg-white/20 transition-all hover:-translate-y-2 shadow-xl w-36 h-36 lg:w-48 lg:h-48 flex flex-col justify-center items-center">
+                    <div class="text-4xl lg:text-6xl mb-2">🎨</div>
+                    <span class="cursive-font text-xl lg:text-2xl text-white font-bold">Творцу</span>
+                </button>
+                <button onclick="openMessage(3)" class="bg-white/10 backdrop-blur-md border border-white/30 rounded-3xl p-4 lg:p-6 text-center hover:bg-white/20 transition-all hover:-translate-y-2 shadow-xl w-36 h-36 lg:w-48 lg:h-48 flex flex-col justify-center items-center">
+                    <div class="text-4xl lg:text-6xl mb-2">✨</div>
+                    <span class="cursive-font text-xl lg:text-2xl text-white font-bold">Самой красивой</span>
+                </button>
+            </div>
+
+            <button onclick="flyToSun()" class="mt-8 lg:mt-12 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-lg lg:text-2xl cursive-font font-bold py-3 px-8 lg:py-4 lg:px-10 rounded-full shadow-[0_0_20px_rgba(255,165,0,0.5)] transform hover:scale-105 transition-all">
+                Завершить полет ☀️
+            </button>
+        </div>
+
+        <!-- ЭКРАН 3: ИДЕАЛЬНОЕ МОДАЛЬНОЕ ОКНО -->
+        <div id="message-modal" class="hidden-state w-full max-w-[98vw] lg:max-w-[90vw] xl:max-w-7xl h-[95vh] glass-panel rounded-2xl lg:rounded-[2.5rem] flex flex-col pointer-events-auto shadow-2xl relative overflow-hidden">
+            
+            <!-- Заголовок (Не прокручивается) -->
+            <div class="flex-shrink-0 text-center pt-4 lg:pt-6 pb-2">
+                <h2 id="msg-title" class="cursive-font text-3xl lg:text-4xl xl:text-5xl text-rose-600 font-bold drop-shadow-sm px-4"></h2>
+            </div>
+            
+            <!-- КОНТЕНТ (БЕЗ ПРОКРУТКИ НА ПК) -->
+            <div class="flex-1 min-h-0 flex flex-col lg:flex-row w-full px-2 lg:px-6 overflow-y-auto lg:overflow-hidden gap-4 lg:gap-8 items-center justify-center custom-scroll lg:custom-scroll-none">
+                
+                <!-- Левая колонка (25%) -->
+                <div id="msg-images-left" class="w-full lg:w-1/4 flex flex-row lg:flex-col flex-wrap justify-center items-center gap-4 lg:gap-6 py-2 min-w-0">
+                    <!-- Фото вставляются скриптом -->
+                </div>
+                
+                <!-- Центральная колонка: Текст (50%) -->
+                <div class="w-full lg:w-2/4 flex flex-col justify-center items-center px-1 lg:px-4 text-center h-full overflow-hidden min-w-0">
+                    <div id="msg-text" class="text-gray-800 text-base md:text-lg xl:text-xl leading-tight space-y-2 lg:space-y-3 font-medium w-full py-1"></div>
+                </div>
+                
+                <!-- Правая колонка (25%) -->
+                <div id="msg-images-right" class="w-full lg:w-1/4 flex flex-row lg:flex-col flex-wrap justify-center items-center gap-4 lg:gap-6 py-2 min-w-0">
+                    <!-- Фото вставляются скриптом -->
+                </div>
+                
+            </div>
+
+            <!-- Подвал с кнопками (Всегда прибит к низу) -->
+            <div class="flex-shrink-0 w-full bg-white/60 backdrop-blur-md border-t border-pink-200/60 p-4 lg:p-6 mt-auto">
+                <p class="cursive-font text-2xl lg:text-3xl text-pink-600 font-bold text-center mb-4">С любовью, твой Даня! ❤️</p>
+                
+                <div class="flex flex-wrap justify-center items-center gap-2 lg:gap-4 w-full">
+                    <button onclick="prevMessage()" class="flex-1 lg:flex-none bg-white text-rose-600 border border-rose-200 font-bold py-2 lg:py-3 px-2 lg:px-8 rounded-full hover:bg-rose-50 transition-all shadow-sm text-sm lg:text-base">⬅️ Пред.</button>
+                    <button onclick="closeMessage()" class="flex-1 lg:flex-none bg-gray-100 text-gray-600 border border-gray-300 font-bold py-2 lg:py-3 px-2 lg:px-8 rounded-full hover:bg-gray-200 transition-all shadow-sm text-sm lg:text-base whitespace-nowrap">К Земле</button>
+                    <button onclick="nextMessage()" class="flex-1 lg:flex-none bg-white text-rose-600 border border-rose-200 font-bold py-2 lg:py-3 px-2 lg:px-8 rounded-full hover:bg-rose-50 transition-all shadow-sm text-sm lg:text-base">След. ➡️</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ЭКРАН 4: ФИНАЛ У СОЛНЦА -->
+        <div id="final-screen" class="hidden-state flex-col items-center justify-center w-full max-w-4xl glass-panel rounded-3xl p-8 lg:p-14 pointer-events-auto text-center">
+            <h1 class="cursive-font text-4xl lg:text-6xl text-orange-600 font-bold mb-4 drop-shadow-md">Мамочка, я тебя очень сильно люблю! ❤️</h1>
+            <p class="cursive-font text-2xl lg:text-4xl text-gray-600">Твой сын, Даня.</p>
+        </div>
+
+    </div>
+
+    <script>
+        // ДАННЫЕ ОТКРЫТОК И ФОТОГРАФИИ
+        const messagesData = {
+            1: {
+                title: "С Днём Рождения, Родная!",
+                text: `<p>Моя любимая, бесценная мамочка! От всего сердца поздравляю тебя с твоим красивым юбилеем — <strong>55-летием</strong>!</p>
+                       <p>Для меня ты всегда была и остаешься самым главным человеком в жизни, путеводной звездой и надежным тылом. Твоя безграничная любовь, забота и поддержка согревают меня каждый день. Ты научила меня быть сильным, верить в себя и никогда не сдаваться.</p>
+                       <p>Я безумно горд тем, что я твой сын. Спасибо тебе за каждое теплое слово, за твои мудрые советы и за ту невероятную атмосферу уюта, которую ты всегда создаешь вокруг себя.</p>
+                       <p>Желаю тебе самого крепкого здоровья, душевного спокойствия и безмерного счастья. Пусть каждый твой день начинается с улыбки!</p>`,
+                images: ["1000056027.jpg", "1000056030.jpg"]
+            },
+            2: {
+                title: "Творцу и созидателю 🎨",
+                text: `<p>Мамуля, я не перестаю восхищаться твоим удивительным, многогранным талантом!</p>
+                       <p>Твои картины — это не просто краски на холсте, это настоящие эмоции, жизнь и свет, которые ты даришь миру. А написанные тобой книги увлекают в потрясающие миры и дарят читателям искреннее вдохновение и мудрость.</p>
+                       <p>Ты вкладываешь частичку своей прекрасной, глубокой души во всё, к чему прикасаешься. Твоя созидательная энергия не знает границ!</p>
+                       <p>Пожалуйста, никогда не останавливайся. Продолжай творить, писать, рисовать, мечтать и делать этот мир ярче своим уникальным искусством! Я твой самый преданный поклонник.</p>`,
+                images: ["1000056029.jpg", "1000056025.jpg", "1000056028.jpg"]
+            },
+            3: {
+                title: "Самой красивой и молодой",
+                text: `<p>Глядя на тебя, абсолютно невозможно поверить цифрам в паспорте! Ты всегда полна невероятной энергии, сногсшибательной красоты, молодости и внутреннего света.</p>
+                       <p>Твоя искренняя улыбка способна разогнать любые тучи и осветить всё вокруг. Рядом с тобой всегда легко, тепло и радостно.</p>
+                       <p>Пусть каждый твой новый день будет наполнен приятными сюрпризами, интересными событиями и домашним уютом. Желаю тебе неиссякаемого вдохновения, ярких путешествий и огромного, бесконечного женского счастья!</p>
+                       <p>Знай, что я всегда рядом и готов поддержать тебя в любую минуту. Я люблю тебя до самой Луны и обратно, моя самая красивая мама! ❤️</p>`,
+                images: ["1000056024.jpg", "1000056026.jpg"]
+            }
+        };
+
+        // --- ИНИЦИАЛИЗАЦИЯ THREE.JS ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 8000);
+        camera.position.z = 100;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        // Оптимизация для мобильных устройств
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // --- ЗВЕЗДЫ ---
+        const starsCount = 12000;
+        const posArray = new Float32Array(starsCount * 3);
+        const colorArray = new Float32Array(starsCount * 3);
+        
+        for (let i = 0; i < starsCount; i++) {
+            posArray[i * 3] = (Math.random() - 0.5) * 4000;
+            posArray[i * 3 + 1] = (Math.random() - 0.5) * 4000;
+            posArray[i * 3 + 2] = (Math.random() - 0.5) * 4000;
+            
+            const starType = Math.random();
+            let r, g, b;
+            if (starType > 0.8) { r = 1; g = 0.9; b = 0.5; } 
+            else if (starType > 0.6) { r = 0.6; g = 0.8; b = 1; }
+            else if (starType > 0.5) { r = 1; g = 0.7; b = 0.7; }
+            else { r = 1; g = 1; b = 1; }
+            
+            const intensity = Math.random() * 0.7 + 0.3;
+            colorArray[i * 3] = r * intensity;
+            colorArray[i * 3 + 1] = g * intensity;
+            colorArray[i * 3 + 2] = b * intensity;
+        }
+        
+        const starsGeo = new THREE.BufferGeometry();
+        starsGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        starsGeo.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
+        
+        const starCanvas = document.createElement('canvas');
+        starCanvas.width = 16; starCanvas.height = 16;
+        const ctx = starCanvas.getContext('2d');
+        const grad = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
+        grad.addColorStop(0, 'rgba(255,255,255,1)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, 16, 16);
+        const starTex = new THREE.CanvasTexture(starCanvas);
+
+        const starField = new THREE.Points(starsGeo, new THREE.PointsMaterial({
+            size: 4.5, map: starTex, transparent: true, vertexColors: true, 
+            blending: THREE.AdditiveBlending, depthWrite: false
+        }));
+        scene.add(starField);
+
+        // --- ЗЕМЛЯ ---
+        const earthGroup = new THREE.Group();
+        earthGroup.position.set(0, -15, -1500);
+        scene.add(earthGroup);
+
+        const texLoader = new THREE.TextureLoader();
+        const earthMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(25, 64, 64),
+            new THREE.MeshPhongMaterial({
+                map: texLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg'),
+                specularMap: texLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_specular_2048.jpg'),
+                shininess: 15
+            })
+        );
+        const cloudsMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(25.3, 64, 64),
+            new THREE.MeshPhongMaterial({
+                map: texLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_clouds_1024.png'),
+                transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false
+            })
+        );
+        earthGroup.add(earthMesh); earthGroup.add(cloudsMesh);
+
+        // --- СОЛНЦЕ ---
+        const sunGroup = new THREE.Group();
+        sunGroup.position.set(0, 0, -5000); 
+        scene.add(sunGroup);
+
+        const pCanvas = document.createElement('canvas');
+        pCanvas.width = 1024; pCanvas.height = 512;
+        const pCtx = pCanvas.getContext('2d');
+        const pGrad = pCtx.createLinearGradient(0, 0, 0, 512);
+        pGrad.addColorStop(0, '#ff3300'); pGrad.addColorStop(0.5, '#ff8800'); pGrad.addColorStop(1, '#ff3300');
+        pCtx.fillStyle = pGrad; pCtx.fillRect(0, 0, 1024, 512);
+        for (let i = 0; i < 40000; i++) {
+            pCtx.fillStyle = Math.random() > 0.5 ? 'rgba(255,230,100,0.1)' : 'rgba(200,20,0,0.1)';
+            pCtx.fillRect(Math.random() * 1024, Math.random() * 512, Math.random() * 3 + 1, Math.random() * 3 + 1);
+        }
+        const plasmaTex = new THREE.CanvasTexture(pCanvas);
+        
+        const sunCore = new THREE.Mesh(new THREE.SphereGeometry(60, 64, 64), new THREE.MeshBasicMaterial({ map: plasmaTex }));
+        const sunCorona1 = new THREE.Mesh(new THREE.SphereGeometry(63, 64, 64), new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending }));
+        const sunCorona2 = new THREE.Mesh(new THREE.SphereGeometry(72, 64, 64), new THREE.MeshBasicMaterial({ color: 0xff3300, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending }));
+        
+        sunGroup.add(sunCore); sunGroup.add(sunCorona1); sunGroup.add(sunCorona2);
+        sunGroup.add(new THREE.PointLight(0xffaa00, 4, 3000));
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.2));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        dirLight.position.set(-50, 20, 50);
+        scene.add(dirLight);
+
+        // --- АНИМАЦИЯ ---
+        let flightState = 0; 
+        let speed = 0.2;
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            earthGroup.rotation.y += 0.001;
+            cloudsMesh.rotation.y += 0.0015;
+
+            // Дыхание Солнца
+            const time = Date.now() * 0.002;
+            sunCore.rotation.y -= 0.002;
+            sunCorona1.scale.setScalar(1 + Math.sin(time * 1.5) * 0.02);
+            sunCorona2.scale.setScalar(1 + Math.cos(time * 0.8) * 0.04);
+
+            const positions = starField.geometry.attributes.position.array;
+
+            if (flightState === 1 || flightState === 4) {
+                speed += 0.4; if (speed > 25) speed = 25;
+                for (let i = 0; i < starsCount; i++) {
+                    positions[i * 3 + 2] += speed;
+                    if (positions[i * 3 + 2] > 100) positions[i * 3 + 2] = -2000;
+                }
+                starField.geometry.attributes.position.needsUpdate = true;
+                
+                if (flightState === 1 && speed >= 25 && earthGroup.position.z === -1500) {
+                    setTimeout(() => { flightState = 2; }, 1000);
+                }
+                
+                // ИСПРАВЛЕННАЯ ЛОГИКА: Полет к солнцу теперь работает!
+                if (flightState === 4) {
+                    earthGroup.position.z += speed; // Земля улетает за камеру
+                    sunGroup.position.z += ( -160 - sunGroup.position.z ) * 0.02; // Солнце плавно выплывает
+                    if (sunGroup.position.z > -170) {
+                        flightState = 5; 
+                        document.getElementById('final-screen').classList.remove('hidden-state');
+                        document.getElementById('final-screen').classList.add('fade-in');
+                        document.getElementById('final-screen').style.display = 'flex';
+                    }
+                }
+            } 
+            else if (flightState === 2) {
+                speed *= 0.94; if (speed < 0.2) speed = 0.2;
+                for (let i = 0; i < starsCount; i++) {
+                    positions[i * 3 + 2] += speed;
+                    if (positions[i * 3 + 2] > 100) positions[i * 3 + 2] = -2000;
+                }
+                starField.geometry.attributes.position.needsUpdate = true;
+
+                earthGroup.position.z += ( -60 - earthGroup.position.z ) * 0.04;
+                if (earthGroup.position.z > -62) {
+                    flightState = 3; 
+                    document.getElementById('selection-screen').classList.remove('hidden-state');
+                    document.getElementById('selection-screen').classList.add('fade-in');
+                    document.getElementById('selection-screen').style.display = 'flex';
+                }
+            }
+            else if (flightState === 4) {
+                earthGroup.position.z += speed;
+                sunGroup.position.z += ( -160 - sunGroup.position.z ) * 0.02;
+                if (sunGroup.position.z > -170) {
+                    flightState = 5; 
+                    document.getElementById('final-screen').classList.remove('hidden-state');
+                    document.getElementById('final-screen').classList.add('fade-in');
+                    document.getElementById('final-screen').style.display = 'flex';
+                }
+            }
+
+            if (flightState === 0 || flightState === 3 || flightState === 5) {
+                starField.rotation.z -= 0.0005;
+            }
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // --- ЛОГИКА ИНТЕРФЕЙСА И ФОТОГРАФИЙ ---
+        const screens = {
+            welcome: document.getElementById('welcome-screen'),
+            selection: document.getElementById('selection-screen'),
+            modal: document.getElementById('message-modal'),
+            seaBg: document.getElementById('sea-bg')
+        };
+        let currentCardId = 1;
+
+        window.startFlight = function() {
+            screens.welcome.classList.replace('fade-in', 'fade-out');
+            setTimeout(() => { screens.welcome.classList.add('hidden-state'); flightState = 1; }, 500);
+        };
+
+        window.openMessage = function(id) {
+            currentCardId = id;
+            updateContent();
+            
+            screens.selection.classList.replace('fade-in', 'fade-out');
+            setTimeout(() => {
+                screens.selection.classList.add('hidden-state');
+                screens.selection.style.display = 'none';
+                
+                screens.seaBg.classList.add('active');
+                
+                screens.modal.classList.remove('hidden-state', 'fade-out');
+                screens.modal.classList.add('fade-in');
+                screens.modal.style.display = 'flex';
+                
+                fireConfetti();
+            }, 500);
+        };
+
+        window.closeMessage = function() {
+            screens.modal.classList.replace('fade-in', 'fade-out');
+            screens.seaBg.classList.remove('active');
+            setTimeout(() => {
+                screens.modal.classList.add('hidden-state');
+                screens.modal.style.display = 'none';
+                
+                screens.selection.classList.remove('hidden-state', 'fade-out');
+                screens.selection.classList.add('fade-in');
+                screens.selection.style.display = 'flex';
+            }, 500);
+        };
+
+        window.nextMessage = function() { currentCardId = currentCardId === 3 ? 1 : currentCardId + 1; updateContent(); fireConfetti(); };
+        window.prevMessage = function() { currentCardId = currentCardId === 1 ? 3 : currentCardId - 1; updateContent(); fireConfetti(); };
+
+        window.flyToSun = function() {
+            screens.selection.classList.replace('fade-in', 'fade-out');
+            setTimeout(() => {
+                screens.selection.classList.add('hidden-state');
+                screens.selection.style.display = 'none';
+                flightState = 4;
+            }, 500);
+        };
+
+        function updateContent() {
+            const data = messagesData[currentCardId];
+            document.getElementById('msg-title').innerHTML = data.title;
+            document.getElementById('msg-text').innerHTML = data.text;
+            
+            const leftContainer = document.getElementById('msg-images-left');
+            const rightContainer = document.getElementById('msg-images-right');
+            
+            leftContainer.innerHTML = '';
+            rightContainer.innerHTML = '';
+            
+            data.images.forEach((imgSrc, i) => {
+                const rot = i % 2 === 0 ? '-rotate-2' : 'rotate-2';
+                
+                // УМНАЯ ЛОГИКА РАЗМЕРА: Делаем фото большим, если оно всего одно в своей колонке.
+                // Это либо слайды 1 и 3 (где всего 2 фото), либо центральный слайд (где 2-е фото стоит справа одно).
+                const isThisImageLarge = (data.images.length === 2) || (data.images.length === 3 && i === 1);
+                
+                const maxHClass = isThisImageLarge ? 'max-h-[35vh] lg:max-h-[45vh]' : 'max-h-[22vh] lg:max-h-[25vh]';
+                const paddingBottomClass = isThisImageLarge ? 'pb-8 lg:pb-12' : 'pb-6';
+                
+                const imgHTML = `
+                    <div class="inline-block relative bg-white p-2 ${paddingBottomClass} shadow-[0_8px_20px_rgba(0,0,0,0.15)] rounded-sm transform transition-all duration-300 hover:scale-[1.15] hover:rotate-0 hover:z-50 ${rot} max-w-full box-border flex-shrink-0">
+                        <img src="${imgSrc}" class="w-auto h-auto max-w-full ${maxHClass} object-contain border border-gray-100 block" alt="Фото">
+                    </div>
+                `;
+                
+                if (i % 2 === 0) {
+                    leftContainer.innerHTML += imgHTML;
+                } else {
+                    rightContainer.innerHTML += imgHTML;
+                }
+            });
+        }
+
+        function fireConfetti() {
+            const colors = ['#ffb6c1', '#fce4ec', '#f8bbd0', '#ffffff', '#ffd700'];
+            confetti({ particleCount: 50, angle: 60, spread: 55, origin: { x: 0, y: 0.8 }, colors, zIndex: 100 });
+            confetti({ particleCount: 50, angle: 120, spread: 55, origin: { x: 1, y: 0.8 }, colors, zIndex: 100 });
+        }
+    </script>
+</body>
+</html>
